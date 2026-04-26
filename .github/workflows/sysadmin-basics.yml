@@ -30,7 +30,7 @@ jobs:
          run:
             mkdir -p /home/dci-student/Dokumente/Coding/CB-M2-Cloud-unterreich/cloud-Aufgaben-ILP/ILP--2026-04-16
             echo "System Report" > reports/system-report.txt
-            echo "Datum: $(date)" >> reports/system-report.txt
+            echo "Date: $(date)" >> reports/system-report.txt
             echo "Runner: $RUNNER_NAME" >> reports/system-report.txt
             echo "Directory: $(pwd)" >> reports/system-report.txt
             echo "Contents:" >> reports/system-report.txt
