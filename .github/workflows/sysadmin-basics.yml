@@ -6,35 +6,48 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  APP_NAME: MyDemoApp
+  TARGET_ENV: production
+  REGION: eu-central-1
+
 jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      TARGET_ENV: staging
+
     steps:
-       - name: Repository holen
-         uses: actions/checkout@v4
+      - name: Repository holen
+        uses: actions/checkout@v4
 
-       - name: Aktuelles Verzeichnis anzeigen
-         run: pwd
+      - name: System info
+        run: uname -a
 
-       - name: kernel-/Systeminfo 
-         run: uname -a
+      - name: Create system report
+        run: |
+          mkdir -p reports
+          echo "System Report" > reports/system-report.txt
+          echo "Date: $(date)" >> reports/system-report.txt
+          echo "Runner: ${{ runner.name }}" >> reports/system-report.txt
+          echo "Directory: $(pwd)" >> reports/system-report.txt
+          ls -la >> reports/system-report.txt
 
-       - name: aktuelles Datum anzeigen
-         run: date
+      - name: Create runtime info
+        run: |
+          mkdir -p reports
+          echo "Runtime Info" > reports/runtime-info.txt
+          echo "APP_NAME: $APP_NAME" >> reports/runtime-info.txt
+          echo "TARGET_ENV: $TARGET_ENV" >> reports/runtime-info.txt
+          echo "REGION: $REGION" >> reports/runtime-info.txt
+          echo "Simulated system: $TARGET_ENV" >> reports/runtime-info.txt
 
-       - name: Verzeichnisinhalt auflisten
-         run: ls -la
 
-       - name: Textdatei
-         run: |
-            mkdir -p reports
-            echo "System Report" > reports/system-report.txt
-            echo "Date: $(date)" >> reports/system-report.txt
-            echo "Runner: ${{ runner.name }}" >> reports/system-report.txt
-            echo "Directory: $(pwd)" >> reports/system-report.txt
-            echo "Contents:" >> reports/system-report.txt
-            ls -la >> reports/system-report.txt
-
-       - name: Show report file
-         run: cat reports/system-report.txt
+      - name: Upload reports as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-reports
+          path: |
+            reports/system-report.txt
+            reports/runtime-info.txt
