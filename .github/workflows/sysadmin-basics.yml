@@ -27,7 +27,7 @@ jobs:
          run: ls -la
 
        - name: Textdatei
-         run:
+         run: |
             mkdir -p /home/dci-student/Dokumente/Coding/CB-M2-Cloud-unterreich/cloud-Aufgaben-ILP/ILP--2026-04-16
             echo "System Report" > reports/system-report.txt
             echo "Date: $(date)" >> reports/system-report.txt
