@@ -1,53 +1,52 @@
-name: Aufgaben CI-CD Workflows
+name: Secrets Demo Workflow
 
 on:
   push:
-    branches:
-      - main
   workflow_dispatch:
 
-env:
-  APP_NAME: MyDemoApp
-  TARGET_ENV: production
-  REGION: eu-central-1
-
 jobs:
-  test:
+  check-secrets:
     runs-on: ubuntu-latest
 
-    env:
-      TARGET_ENV: staging
-
     steps:
-      - name: Repository holen
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: System info
-        run: uname -a
-
-      - name: Create system report
+      - name: Check secrets existence
+        env:
+          CLOUD_API_TOKEN: ${{ secrets.CLOUD_API_TOKEN }}
+          SSH_TARGET: ${{ secrets.SSH_TARGET }}
         run: |
-          mkdir -p reports
-          echo "System Report" > reports/system-report.txt
-          echo "Date: $(date)" >> reports/system-report.txt
-          echo "Runner: ${{ runner.name }}" >> reports/system-report.txt
-          echo "Directory: $(pwd)" >> reports/system-report.txt
-          ls -la >> reports/system-report.txt
+          echo "=== Secret Check ==="
 
-      - name: Create runtime info
+          if [ -z "$CLOUD_API_TOKEN" ]; then
+            echo "CLOUD_API_TOKEN: FEHLT ❌"
+          else
+            echo "CLOUD_API_TOKEN: VORHANDEN ✅"
+          fi
+
+          if [ -z "$SSH_TARGET" ]; then
+            echo "SSH_TARGET: FEHLT ❌"
+          else
+            echo "SSH_TARGET: VORHANDEN ✅"
+          fi
+
+      - name: Use secrets safely
+        env:
+          CLOUD_API_TOKEN: ${{ secrets.CLOUD_API_TOKEN }}
+          SSH_TARGET: ${{ secrets.SSH_TARGET }}
         run: |
-          mkdir -p reports
-          echo "Runtime Info" > reports/runtime-info.txt
-          echo "APP_NAME: $APP_NAME" >> reports/runtime-info.txt
-          echo "TARGET_ENV: $TARGET_ENV" >> reports/runtime-info.txt
-          echo "REGION: $REGION" >> reports/runtime-info.txt
-          echo "Simulated system: $TARGET_ENV" >> reports/runtime-info.txt
+          echo "=== Safe usage ==="
 
+          # فقط بررسی وجود، نه مقدار
+          if [ -n "$CLOUD_API_TOKEN" ]; then
+            echo "Token status: OK (nicht angezeigt)"
+          else
+            echo "Token status: FEHLT"
+          fi
 
-      - name: Upload reports as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: workflow-reports
-          path: |
-            reports/system-report.txt
-            reports/runtime-info.txt
+          if [ -n "$SSH_TARGET" ]; then
+            echo "SSH target status: OK (nicht angezeigt)"
+          else
+            echo "SSH target status: FEHLT"
+          fi

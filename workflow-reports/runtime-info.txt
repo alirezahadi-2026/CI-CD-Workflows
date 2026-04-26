@@ -1,0 +1,5 @@
+Runtime Info
+APP_NAME: MyDemoApp
+TARGET_ENV: staging
+REGION: eu-central-1
+Simulated system: staging
