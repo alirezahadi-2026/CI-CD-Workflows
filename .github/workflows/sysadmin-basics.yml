@@ -1,52 +1,52 @@
-name: Secrets Demo Workflow
+name: Environment Config Demo
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  check-secrets:
+  config-job:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check secrets existence
-        env:
-          CLOUD_API_TOKEN: ${{ secrets.CLOUD_API_TOKEN }}
-          SSH_TARGET: ${{ secrets.SSH_TARGET }}
+      - name: Decide environment
+        id: env
         run: |
-          echo "=== Secret Check ==="
-
-          if [ -z "$CLOUD_API_TOKEN" ]; then
-            echo "CLOUD_API_TOKEN: FEHLT ❌"
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "ENV=prod" >> $GITHUB_OUTPUT
           else
-            echo "CLOUD_API_TOKEN: VORHANDEN ✅"
+            echo "ENV=dev" >> $GITHUB_OUTPUT
           fi
 
-          if [ -z "$SSH_TARGET" ]; then
-            echo "SSH_TARGET: FEHLT ❌"
-          else
-            echo "SSH_TARGET: VORHANDEN ✅"
-          fi
-
-      - name: Use secrets safely
-        env:
-          CLOUD_API_TOKEN: ${{ secrets.CLOUD_API_TOKEN }}
-          SSH_TARGET: ${{ secrets.SSH_TARGET }}
+      - name: Load config file
+        id: config
         run: |
-          echo "=== Safe usage ==="
+          ENV=${{ steps.env.outputs.ENV }}
 
-          # فقط بررسی وجود، نه مقدار
-          if [ -n "$CLOUD_API_TOKEN" ]; then
-            echo "Token status: OK (nicht angezeigt)"
+          if [ "$ENV" = "prod" ]; then
+            FILE="config/prod.env"
           else
-            echo "Token status: FEHLT"
+            FILE="config/dev.env"
           fi
 
-          if [ -n "$SSH_TARGET" ]; then
-            echo "SSH target status: OK (nicht angezeigt)"
-          else
-            echo "SSH target status: FEHLT"
-          fi
+          echo "FILE=$FILE" >> $GITHUB_OUTPUT
+
+          echo "=== Selected Config File ==="
+          echo "$FILE"
+
+      - name: Read config values
+        run: |
+          FILE=${{ steps.config.outputs.FILE }}
+
+          echo "=== Environment Info ==="
+          echo "Environment: ${{ steps.env.outputs.ENV }}"
+          echo "Config file: $FILE"
+
+          echo "=== Loaded Values ==="
+          while IFS='=' read -r key value
+          do
+            echo "$key = $value"
+          done < "$FILE"
