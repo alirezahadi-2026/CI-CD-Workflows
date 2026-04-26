@@ -37,4 +37,4 @@ jobs:
             ls -la >> reports/system-report.txt
 
        - name: Show report file
-          run: cat reports/system-report.txt
+         run: cat reports/system-report.txt
